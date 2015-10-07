@@ -1,5 +1,5 @@
 # -*- coding: utf_8 -*-
-import sys, untitle, sqlite3 
+import sys, untitle, sqlite3, copy
 from untitle import Ui_MainWindow
 from PyQt4.QtGui import QMainWindow
 sys.setdefaultencoding('utf_8')
@@ -20,16 +20,57 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 return result
         else:
             return None
-    def	on_text_changed(self):
-        # print unicode(self.textEdit.toPlainText(),"utf8")
-        word_id = self.findWord(self.textEdit.toPlainText() + " ", 1)
-        cursor = self.con.execute("""SELECT bopomofo from heteronyms WHERE entry_id = ?""", (word_id,))
-        self.label.setText(str(cursor.fetchone()[0]).decode("utf8"))
+    def findAllPhonetic(self, ch):
+        print ch
+        cursor = self.con.execute("""SELECT `id` from entries WHERE title = ?;""", (ch, ))
+        charId = cursor.fetchone()
+        if charId != None:
+            charId = charId[0]
+            cursor = self.con.execute("""SELECT `bopomofo` from heteronyms WHERE entry_id = ?""", (charId, ))
+            lis = cursor.fetchall()
+            retList = list()
+            for item in lis:
+                retList.append(item[0].decode("utf8"))
+            return retList
+        else:
+            return (" ",)
+    def expendAllPhonticCombination(self, phoneticLists, index):
+        tempList = list()
+        if index+1 < len(phoneticLists):
+            nextChar = self.expendAllPhonticCombination(phoneticLists, index+1)
+            for phonetic in phoneticLists[index]:
+                nextCharCopy = copy.deepcopy(nextChar)
+                for nextCharCopyitem in nextCharCopy:
+                    nextCharCopyitem.insert(0, phonetic)
+                tempList.extend(nextCharCopy)
+        else:
+            for phonetic in phoneticLists[index]:
+                tempList.append([phonetic,])
+        return tempList
+    def onButtonPressed(self):
+        tempStr = u""
+        phoneticLists = list()
+        inputString = str(self.textEdit.toPlainText()).decode('utf8')
+        for ch in inputString:
+            print ch
+            if ch == None or ch == '\n':
+                continue
+            phoneticList = self.findAllPhonetic(ch)
+            phoneticLists.append(phoneticList)
+        tempList = self.expendAllPhonticCombination(phoneticLists,0)
+        print tempList
+        for item in tempList:
+            for i in item:
+                tempStr += i
+                tempStr += " "
+            tempStr += "\n"
+        self.label.setText(tempStr)
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
         self.setupUi(self)
-        self.textEdit.setText('請輸入文字')
-        self.textEdit.textChanged.connect(self.on_text_changed)
+        self.textEdit.setText('Words')
+        self.label.setText("Phonetic")
+        self.pushButton.clicked.connect(self.onButtonPressed)
 
 if __name__ == "__main__":
     app = untitle.QtGui.QApplication(sys.argv)
