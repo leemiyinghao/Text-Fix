@@ -179,7 +179,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.textEdit.setText('Words')
         self.textEdit_2.setText("Phonetic")
         self.pushButton.clicked.connect(self.onButtonPressed)
-        '''
         #TEST MODE NEW
         for j in range(5):
             tStart = time.time()
@@ -203,33 +202,34 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.textEdit_2.setText(searchTemp)
             tEnd = time.time()
             print "It cost %f sec" % (tEnd - tStart)
-        raw_input()
+        print "OLD:"
         #TEST MODE NEW
-        '''
         #TEST MODE OLD
         for j in range(5):
             tStart = time.time()
-            for i in range(1):
+            for i in range(10):
                 cursor = self.con.execute("""SELECT `title` from entries WHERE id=?""",(random.randint(1946,163094),))
                 phoneticLists = list()
                 inputString = cursor.fetchone()[0].decode("utf8")
                 searchList = list()
                 finalPhoneticLists = list()
                 for ch in inputString:
-                    phoneticLists.append(self.expendApproxPhonetics(self.findAllPhonetic(ch)))
+                    phoneticList = self.findAllPhonetic(ch)
+                    approxPhoneticList = list()
+                    for phonetic in phoneticList:
+                        approxPhoneticList.extend(self.expendApproxPhonetics(phonetic))
+                    phoneticLists.append(approxPhoneticList)
                 searchList = self.expendAllPhonticCombination(phoneticLists,0)
                 searchTemp = u""
                 for comb in searchList:
                     strTemp = ""
                     for item in comb:
                         strTemp += item + " "
-                    strTemp = strTemp[:-1]
-                    searchTemp += "bopomofo="+strTemp+" OR "
-                    
+                    searchTemp += "bopomofo="+strTemp+"OR "
                 searchTemp += "0"
                 cursor = self.con.execute("""SELECT `entry_id` from heteronyms WHERE ?""", (searchTemp,))
                 entry_ids = cursor.fetchall()
-                self.textEdit_2.setText(inputString)
+                self.textEdit_2.setText(searchTemp)
             tEnd = time.time()
             print "It cost %f sec" % (tEnd - tStart)
         raw_input()
@@ -239,3 +239,4 @@ if __name__ == "__main__":
     window = MainWindow()
     window.show()
     sys.exit(app.exec_())
+#TODO: OOP
