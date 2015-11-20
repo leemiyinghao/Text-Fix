@@ -3,6 +3,7 @@ import sys, untitle, sqlite3, copy, random, time
 from untitle import Ui_MainWindow
 from PyQt4.QtGui import QMainWindow
 sys.setdefaultencoding('utf_8')
+class 
 class MainWindow(QMainWindow, Ui_MainWindow):
     con = sqlite3.connect('dict-revised.sqlite3')
     con.text_factory = str
@@ -102,34 +103,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         tempStr = u""
         phoneticLists = list()
         inputString = str(self.textEdit.toPlainText()).decode('utf8')
-        '''
-        for ch in inputString:
-            # print ch
-            if ch == None or ch == '\n':
-                continue
-            phoneticList = self.findAllPhonetic(ch)
-            approxPhoneticList = list()
-            print phoneticList
-            for phonetic in phoneticList:
-                approxPhoneticList.extend(self.expendApproxPhonetics(phonetic))
-                print self.expendApproxPhonetics(phonetic)
-            phoneticLists.append(approxPhoneticList)
-        # print "len(phoneticLists)", len(phoneticLists)
-        # for item in phoneticLists:
-        #     for i in item:
-        #         tempStr += i
-        #         tempStr += " "
-        #     tempStr += "\n"
-        tempList = self.expendAllPhonticCombination(phoneticLists,0)
-        print len(tempList)
-        # print phoneticLists
-        # print tempList
-        for item in tempList:
-            for i in item:
-                tempStr += i
-                tempStr += " "
-            tempStr += "\n"
-        '''
         searchList = list()
         displayBuf = ""
         for ch in reversed(inputString):
