@@ -1,5 +1,5 @@
 # -*- coding: utf_8 -*-
-import sys, untitle, sqlite3, copy, random, time
+import sys, sqlite3, copy, random, time, codecs
 class CodedWordFinder():
     con = sqlite3.connect('dict-revised.sqlite3')
     con.text_factory = str
@@ -130,10 +130,11 @@ class WordFinder():
         return approxPhonetics
 finder = CodedWordFinder()
 oldFinder = WordFinder()
-for j in range(5):
+for j in range(1000):
     cursor = finder.con.execute("""SELECT `title` from entries WHERE id=?""",(random.randint(1946,163094),))
     phoneticLists = list()
     inputString = cursor.fetchone()[0].decode("utf8")
+    print inputString
     searchList = list()
     searchTemp = ""
     tStart = time.time()
@@ -173,3 +174,6 @@ for j in range(5):
     tEnd = time.time()
     oldTime = (tEnd - tStart)
     print "%f, %f" % (oldTime, newTime)
+    f = codecs.open('test.csv', 'a', 'utf-8')
+    f.write(u"%s, %f, %f\n" % (inputString, oldTime, newTime))
+    f.close()
