@@ -3,7 +3,6 @@ import sys, untitle, sqlite3, copy, random, time
 from untitle import Ui_MainWindow
 from PyQt4.QtGui import QMainWindow
 sys.setdefaultencoding('utf_8')
-class 
 class MainWindow(QMainWindow, Ui_MainWindow):
     con = sqlite3.connect('dict-revised.sqlite3')
     con.text_factory = str
