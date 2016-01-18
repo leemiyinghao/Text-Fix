@@ -1,7 +1,8 @@
-# -*- coding: utf_8 -*-
+# -*- coding: utf-8 -*-
 import sys, untitle, sqlite3, copy, random, time
 from untitle import Ui_MainWindow
 from PyQt4.QtGui import QMainWindow
+reload(sys)
 sys.setdefaultencoding('utf_8')
 class MainWindow(QMainWindow, Ui_MainWindow):
     con = sqlite3.connect('dict-revised.sqlite3')
@@ -126,10 +127,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     entry_ids = cursor.fetchall()
                     for entry_id in entry_ids:
                         cursor = self.con.execute("""SELECT `title` from entries WHERE id = ?""", (entry_id[0],))
-                        tempStr += cursor.fetchone()[0] + " "
+                        tempStr = cursor.fetchone()[0] + " " + tempStr
                 phoneticLists = list()
                 phoneticLists.append(firstChr)
-                tempStr += "\n"
+                tempStr = "\n" + tempStr
         searchList = self.expendAllPhonticCombination(phoneticLists,0)
         for comb in searchList:
             strTemp = ""
@@ -141,71 +142,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             entry_ids = cursor.fetchall()
             for entry_id in entry_ids:
                 cursor = self.con.execute("""SELECT `title` from entries WHERE id = ?""", (entry_id[0],))
-                tempStr += cursor.fetchone()[0] + " "
+                tempStr = cursor.fetchone()[0] + " " + tempStr
         phoneticLists = list()
-        tempStr += "\n"
         self.textEdit_2.setText(tempStr)
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
         self.setupUi(self)
         self.textEdit.setText('Words')
         self.textEdit_2.setText("Phonetic")
+        self.textEdit.textChanged.connect(self.onButtonPressed)
         self.pushButton.clicked.connect(self.onButtonPressed)
-        #TEST MODE NEW
-        for j in range(5):
-            tStart = time.time()
-            for i in range(10):
-                cursor = self.con.execute("""SELECT `title` from entries WHERE id=?""",(random.randint(1946,163094),))
-                phoneticLists = list()
-                inputString = cursor.fetchone()[0].decode("utf8")
-                searchList = list()
-                searchTemp = ""
-                for ch in inputString:
-                    phoneticLists.append(self.findAllPhoneticInAEncode(ch))
-                searchList = self.expendAllPhonticCombination(phoneticLists,0)
-                for comb in searchList:
-                    strTemp = ""
-                    for item in comb:
-                        strTemp += item + " "
-                    searchTemp += "bopomofoAEncode="+strTemp+"OR "
-                searchTemp += "0"
-                cursor = self.con.execute("""SELECT `entry_id` from heteronyms WHERE ?""", (strTemp,))
-                entry_ids = cursor.fetchall()
-                self.textEdit_2.setText(searchTemp)
-            tEnd = time.time()
-            print "It cost %f sec" % (tEnd - tStart)
-        print "OLD:"
-        #TEST MODE NEW
-        #TEST MODE OLD
-        for j in range(5):
-            tStart = time.time()
-            for i in range(10):
-                cursor = self.con.execute("""SELECT `title` from entries WHERE id=?""",(random.randint(1946,163094),))
-                phoneticLists = list()
-                inputString = cursor.fetchone()[0].decode("utf8")
-                searchList = list()
-                finalPhoneticLists = list()
-                for ch in inputString:
-                    phoneticList = self.findAllPhonetic(ch)
-                    approxPhoneticList = list()
-                    for phonetic in phoneticList:
-                        approxPhoneticList.extend(self.expendApproxPhonetics(phonetic))
-                    phoneticLists.append(approxPhoneticList)
-                searchList = self.expendAllPhonticCombination(phoneticLists,0)
-                searchTemp = u""
-                for comb in searchList:
-                    strTemp = ""
-                    for item in comb:
-                        strTemp += item + " "
-                    searchTemp += "bopomofo="+strTemp+"OR "
-                searchTemp += "0"
-                cursor = self.con.execute("""SELECT `entry_id` from heteronyms WHERE ?""", (searchTemp,))
-                entry_ids = cursor.fetchall()
-                self.textEdit_2.setText(searchTemp)
-            tEnd = time.time()
-            print "It cost %f sec" % (tEnd - tStart)
-        raw_input()
-        #TEST MODE OLD
 if __name__ == "__main__":
     app = untitle.QtGui.QApplication(sys.argv)
     window = MainWindow()
